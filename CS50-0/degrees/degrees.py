@@ -70,14 +70,13 @@ def main():
     if target is None:
         sys.exit("Person not found.")
 
-    (path, numExplored) = shortest_path(source, target)
+    path = shortest_path(source, target)
 
     if path is None:
-        print("Not connected")
+        print("no path")
     else:
         degrees = len(path)
         print(f"{degrees} degrees of separation.")
-        print(f"Number of nodes explored: {numExplored}")
         path = [(None, source)] + path
         for i in range(degrees):
             person1 = people[path[i][1]]["name"]
@@ -108,7 +107,7 @@ def shortest_path(source, target):
 
         # If nothing left in frontier, then no path
         if frontier.empty():
-            return (None, numExplored)
+            return None
 
         # Choose a node from the frontier
         node = frontier.remove()
@@ -116,7 +115,7 @@ def shortest_path(source, target):
 
         # If node is the goal, then we have a solution
         if node.state == target:
-            return (WalkPath (node), numExplored)
+            return WalkPath (node)
 
         # Mark node as explored
         explored.add(node.state)
@@ -126,7 +125,7 @@ def shortest_path(source, target):
             if not frontier.contains_state(state) and state not in explored:
                 child = Node(state=state, parent=node, action=action)
                 if state == target:
-                    return (WalkPath (child), numExplored)
+                    return WalkPath (child)
                 frontier.add(child)
 
 def WalkPath (target):
