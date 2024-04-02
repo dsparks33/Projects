@@ -28,6 +28,7 @@ def player(board):
 
     return X if numX == numO else O
 
+
 def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
@@ -40,16 +41,20 @@ def actions(board):
     
     return emptyPositions
 
+
 def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    if any(coord > 2 for coord in action):
+    if any(coord > 2 for coord in action) or any(coord < 0 for coord in action):
         raise ValueError("Action out of range")
+    if (board[action[0]][action[1]] != EMPTY):
+        raise ValueError("Action invalid, cell already used")
     XorO = player(board)
     boardCopy = copy.deepcopy(board)
     boardCopy[action[0]][action[1]] = XorO
     return boardCopy
+
 
 def winner(board):
     """
@@ -68,6 +73,7 @@ def winner(board):
     
     return None  # No winner found
 
+
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
@@ -80,6 +86,7 @@ def terminal(board):
                 return False
         return True
 
+
 def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
@@ -87,32 +94,41 @@ def utility(board):
     aWinner = winner(board)
     return {'X': 1, 'O': -1}.get(aWinner, 0)
 
-def maxValue (board):
-    if terminal(board): return utility(board)
+
+def maxValue(board):
+    if terminal(board):
+        return utility(board)
     v = -math.inf
     for action in actions(board):
         v = max(v, minValue(result(board, action)))
     return v
 
-def minValue (board):
-    if terminal(board): return utility(board)
+
+def minValue(board):
+    if terminal(board):
+        return utility(board)
     v = math.inf
     for action in actions(board):
         v = min(v, maxValue(result(board, action)))
     return v
 
+
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
-    Assumes there is at least one open space on the board.
     """
+    if terminal(board):
+        return None
+    
     nextPlayer = player(board)
-    currentValue = -1 if nextPlayer == X else 1
+    currentValue = -math.inf if nextPlayer == X else math.inf
+    bestAction = None
 
-    for options in actions(board):
-        tempBoard = result(board, options)
-        resultValue = maxValue(tempBoard) if nextPlayer == X else minValue(tempBoard)
+    for action in actions(board):
+        tempBoard = result(board, action)
+        resultValue = maxValue(tempBoard) if nextPlayer == O else minValue(tempBoard)
         if (nextPlayer == X and resultValue > currentValue) or (nextPlayer == O and resultValue < currentValue):
-            currentValue, retOptions = resultValue, options
+            currentValue = resultValue
+            bestAction = action
 
-    return retOptions
+    return bestAction
