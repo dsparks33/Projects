@@ -5,16 +5,17 @@ import sys
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-EPOCHS = 10
-IMG_WIDTH = 30
-IMG_HEIGHT = 30
+EPOCHS = 10              # iterations to train the model
+IMG_WIDTH = 30           # reduce size of image files
+IMG_HEIGHT = 30          # the model requires all to be the same size
 NUM_CATEGORIES = 43      # the full dataset
-TEST_SIZE = 0.4
+TEST_SIZE = 0.4          # use 60% of the data to train, 40% for testing the model
 
 
 def main():
 
-    # Check command-line arguments
+    # Check command-line arguments, 1st argument is directory that contains set of image files to train with,
+    # the 2nd argument is a an optional file name to save the trained model
     data_directory = sys.argv[1] if len(
         sys.argv) > 1 else "/Users/dsparks/Github/Projects/CS50-0/traffic/gtsrb"
     model_filename = sys.argv[2] if len(
@@ -85,9 +86,7 @@ def load_data(data_dir):
 
 def get_model():
     """
-    Returns a compiled convolutional neural network model. Assume that the
-    `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
-    The output layer should have `NUM_CATEGORIES` units, one for each category.
+    Returns a compiled convolutional neural network model built with multiple convolutional, pooling and hidden layers.
     """
     
     # Define input shape
@@ -98,24 +97,25 @@ def get_model():
         # Specify input shape using Input layer
         tf.keras.layers.Input(shape=input_shape),
 
-        # Convolutional layer with 32 filters, 3x3 kernel size, and ReLU activation
+        # Two separate convolutional layer with 32/16 filters, 3x3/5x5 kernel size, and sigmoid activation
+        # The 2nd layer improved the accuracy of the trained data (pure experimentation) 
         tf.keras.layers.Conv2D(32, (3, 3), activation='sigmoid'),
         tf.keras.layers.Conv2D(16, (5, 5), activation='sigmoid'),
         
         # Max pooling layer with 2x2 pool size
         tf.keras.layers.MaxPooling2D((2, 2)),
         
-        # Flatten layer to convert 3D feature maps into 1D feature vectors
+        # Flatten layer to convert 3D maps into 1D vectors
         tf.keras.layers.Flatten(),
         
-        # Dense (fully connected) layer with 128 neurons, ReLU activation
+        # Fully connected dense layer with 128 neurons, ReLU activation
         tf.keras.layers.Dense(128, activation='sigmoid'),
         
         # Output layer with number of neurons equal to the number of categories and softmax activation
         tf.keras.layers.Dense(NUM_CATEGORIES, activation='softmax')
     ])
 
-    # Compile the model
+    # Build the model
     model.compile(optimizer='adam',
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
